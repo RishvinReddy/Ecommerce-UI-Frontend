@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopX | Premium E-Commerce</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+      
+      <!-- Logo -->
+      <a href="#" class="logo">Shop<span class="highlight">X</span></a>
+
+      <!-- Navigation Links -->
+      <nav class="nav" id="navMenu">
+        <ul>
+          <li><a href="#" class="nav-link">Home</a></li>
+          <li class="dropdown">
+            <a href="#" class="nav-link">Products <i class="fas fa-chevron-down dropdown-icon"></i></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Electronics</a></li>
+              <li><a href="#">Fashion</a></li>
+              <li><a href="#">Home & Living</a></li>
+              <li><a href="#">Accessories</a></li>
+            </ul>
+          </li>
+          <li><a href="#" class="nav-link">About</a></li>
+          <li><a href="#" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Section -->
+      <div class="header-right">
+        <!-- Search Bar -->
+        <div class="search-container">
+          <input type="text" placeholder="Search products..." class="search" id="searchInput">
+          <i class="fas fa-search search-icon"></i>
+          
+          <!-- Search Suggestions -->
+          <div class="search-suggestions" id="searchSuggestions">
+            <ul>
+              <li><i class="fas fa-search"></i> MacBook Pro 16"</li>
+              <li><i class="fas fa-search"></i> iPhone 15 Pro Max</li>
+              <li><i class="fas fa-search"></i> Sony WH-1000XM5</li>
+              <li><i class="fas fa-search"></i> Air Jordans 1</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Cart -->
+        <div class="cart" id="cartToggle">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">3</span>
+          
+          <!-- Cart Preview Popup -->
+          <div class="cart-popup" id="cartPopup">
+            <div class="cart-popup-header">
+              <h4>Your Cart</h4>
+            </div>
+            <div class="cart-items">
+              <!-- Mock Cart Item -->
+              <div class="cart-item">
+                <div class="item-img"><i class="fas fa-laptop"></i></div>
+                <div class="item-details">
+                  <p class="item-name">MacBook Pro 16"</p>
+                  <p class="item-price">$2,499</p>
+                </div>
+              </div>
+              <div class="cart-item">
+                <div class="item-img"><i class="fas fa-headphones"></i></div>
+                <div class="item-details">
+                  <p class="item-name">Sony WH-1000XM5</p>
+                  <p class="item-price">$399</p>
+                </div>
+              </div>
+            </div>
+            <div class="cart-popup-footer">
+              <div class="total">Total: <span>$2,898</span></div>
+              <button class="checkout-btn">Checkout</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hamburger -->
+        <div class="hamburger" id="hamburger">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dummy Content for scrolling -->
+  <main style="height: 2000px; padding: 100px 5%; font-family: 'Inter', sans-serif;">
+    <h1 style="font-size: 3rem; margin-bottom: 20px;">Welcome to the next generation of Shopping.</h1>
+    <p style="font-size: 1.2rem; color: #666;">Scroll down to see the sticky glassmorphism header in action.</p>
+  </main>
+
+  <script src="scripts/app.js"></script>
+</body>
+</html>
