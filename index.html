@@ -127,10 +127,28 @@
     </div>
   </section>
 
-  <!-- Dummy space for scrolling text to test sticky header -->
-  <div style="height: 1000px; padding: 40px 5%; text-align: center; color: #666;">
-      <p>Scroll down to see the sticky glassmorphism header keep its beauty!</p>
-  </div>
+  <!-- Products Section -->
+  <section class="products" id="products">
+    <div class="products-container">
+      <div class="products-header">
+        <h2 class="section-title">Trending <span class="highlight">Products</span></h2>
+        
+        <!-- Category Filters -->
+        <div class="product-filters" id="productFilters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="electronics">Electronics</button>
+          <button class="filter-btn" data-filter="jewelery">Jewelry</button>
+          <button class="filter-btn" data-filter="men's clothing">Men's</button>
+          <button class="filter-btn" data-filter="women's clothing">Women's</button>
+        </div>
+      </div>
+      
+      <!-- Dynamic Product Grid -->
+      <div class="product-grid" id="productGrid">
+        <!-- Products will be injected here via JS -->
+      </div>
+    </div>
+  </section>
   <script src="scripts/app.js"></script>
 </body>
 </html>
