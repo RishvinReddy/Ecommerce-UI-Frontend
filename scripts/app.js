@@ -82,6 +82,54 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================
+  // SHARED CART LOGIC
+  // ==========================================
+  window.updateCartCount = function() {
+    const count = document.querySelector(".cart-count");
+    if (!count) return;
+
+    let cart = JSON.parse(localStorage.getItem("premium_cart")) || [];
+    let totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    count.textContent = totalItems;
+  };
+  
+  window.addToCart = function(e, productString, qty = 1) {
+    if(e) e.preventDefault();
+    if(e && e.stopPropagation) e.stopPropagation();
+    
+    let product = typeof productString === 'string' ? JSON.parse(productString) : productString;
+    let cart = JSON.parse(localStorage.getItem("premium_cart")) || [];
+    
+    // Check if product exists in cart
+    const existingIndex = cart.findIndex(item => item.id === product.id);
+    if(existingIndex >= 0) {
+      cart[existingIndex].quantity += parseInt(qty);
+    } else {
+      cart.push({...product, quantity: parseInt(qty)});
+    }
+    
+    localStorage.setItem("premium_cart", JSON.stringify(cart));
+    updateCartCount();
+    
+    // Basic toast animation
+    const btn = e ? e.currentTarget : null;
+    if(btn) {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = 'Added <i class="fas fa-check" style="margin-left:5px;"></i>';
+      btn.style.background = '#32d74b';
+      btn.style.color = 'white';
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '';
+        btn.style.color = '';
+      }, 1500);
+    }
+  };
+
+  // Initialize cart visually
+  updateCartCount();
+
+  // ==========================================
   // DYNAMIC PRODUCT GRID (FakeStore API)
   // ==========================================
   const productGrid = document.getElementById("productGrid");
@@ -137,8 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize
   fetchProducts();
 
-  // 3. Render Products Function
   function renderProducts(products) {
+    if(!productGrid) return; // Prevent errors if not on index.html
     productGrid.innerHTML = ""; // Clear existing logic
     
     if (products.length === 0) {
@@ -154,26 +202,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const fullStars = Math.floor(product.rating.rate);
       const starHTML = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
 
-      // Using Premium FAANG Aesthetics
+      // Using Premium FAANG Aesthetics with explicit routing link
+      const productJSON = JSON.stringify(product).replace(/'/g, "&#39;"); // safe for HTML injection
+      
       card.innerHTML = `
-        <div class="product-img-wrapper">
-          <img loading="lazy" src="${product.image}" alt="${product.title}">
-        </div>
-        <div class="product-card-body">
-          <span class="product-category">${product.category}</span>
-          <h3 class="product-title" title="${product.title}">${product.title}</h3>
-          
-          <div class="product-rating">
-            <i>${starHTML}</i>
-            <span>(${product.rating.count})</span>
+        <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1;">
+          <div class="product-img-wrapper">
+            <img loading="lazy" src="${product.image}" alt="${product.title}">
           </div>
-          
-          <div class="product-footer">
-            <span class="product-price">$${product.price.toFixed(2)}</span>
-            <button class="add-to-cart-btn" aria-label="Add to cart">
-              <span style="font-size: 18px;">+</span>
-            </button>
+          <div class="product-card-body" style="padding-bottom: 0;">
+            <span class="product-category">${product.category}</span>
+            <h3 class="product-title" title="${product.title}">${product.title}</h3>
+            
+            <div class="product-rating">
+              <i>${starHTML}</i>
+              <span>(${product.rating.count})</span>
+            </div>
           </div>
+        </a>
+        <div class="product-footer" style="padding: 16px 24px 24px; margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+          <span class="product-price">$${product.price.toFixed(2)}</span>
+          <button class="add-to-cart-btn" aria-label="Add to cart" onclick='addToCart(event, ${productJSON})'>
+            <span style="font-size: 18px;">+</span>
+          </button>
         </div>
       `;
 
@@ -182,21 +233,168 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 4. Category Filtering Logic
-  filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      // Manage active classes
-      filterBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+  if(filterBtns) {
+    filterBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        // Manage active classes
+        filterBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
 
-      // Filter products array
-      const filterValue = btn.getAttribute("data-filter");
-      
-      if (filterValue === "all") {
-        renderProducts(allProducts);
-      } else {
-        const filtered = allProducts.filter(p => p.category === filterValue);
-        renderProducts(filtered);
-      }
+        // Filter products array
+        const filterValue = btn.getAttribute("data-filter");
+        
+        if (filterValue === "all") {
+          renderProducts(allProducts);
+        } else {
+          const filtered = allProducts.filter(p => p.category === filterValue);
+          renderProducts(filtered);
+        }
+      });
     });
-  });
+  }
+  
+  // ==========================================
+  // PRODUCT DETAIL PAGE LOGIC
+  // ==========================================
+  const productDetail = document.getElementById("productDetail");
+  
+  if(productDetail || window.location.pathname.includes("product.html")) {
+    async function loadProductDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      
+      if (!id) {
+        document.getElementById("productDetail").innerHTML = `<div class="loading-state"><p>Product not found.</p></div>`;
+        return;
+      }
+      
+      try {
+        // Fetch specific product by ID
+        const res = await fetch(`https://fakestoreapi.com/products/${id}`);
+        if(!res.ok) throw new Error("Product fetch failed.");
+        const product = await res.json();
+        
+        // Update breadcrumb
+        const breadcrumb = document.getElementById("breadcrumbTitle");
+        if(breadcrumb) breadcrumb.textContent = product.title;
+        
+        displayProductDetail(product);
+        
+        // As a challenge, load related products
+        loadRelatedProducts(product.category, product.id);
+        
+      } catch(err) {
+        console.error(err);
+        document.getElementById("productDetail").innerHTML = `
+          <div class="loading-state">
+            <p style="color: #ff3b30;">Failed to load product details 🚨</p>
+            <a href="index.html" class="cta-btn secondary-btn" style="margin-top: 20px;">Return Home</a>
+          </div>
+        `;
+      }
+    }
+    
+    function displayProductDetail(product) {
+      const container = document.getElementById("productDetail");
+      const productJSON = JSON.stringify(product).replace(/'/g, "&#39;"); // Make safe for HTML
+      
+      const fullStars = Math.floor(product.rating.rate);
+      const starHTML = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+    
+      container.innerHTML = `
+        <div class="detail-container">
+          <div class="detail-img-container">
+            <img src="${product.image}" class="detail-img" alt="${product.title}">
+          </div>
+          
+          <div class="detail-info">
+            <span class="detail-category">${product.category}</span>
+            <h2 class="detail-title">${product.title}</h2>
+            
+            <div class="detail-rating">
+              <i>${starHTML}</i>
+              <span>${product.rating.rate} Score - (${product.rating.count} Customer Reviews)</span>
+            </div>
+            
+            <p class="detail-price">$${product.price.toFixed(2)}</p>
+            
+            <p class="detail-description">${product.description}</p>
+            
+            <div class="detail-actions">
+              <div class="quantity-selector">
+                <button class="qty-btn minus" onclick="document.getElementById('qty').stepDown()">-</button>
+                <input type="number" id="qty" class="qty-input" value="1" min="1" max="10">
+                <button class="qty-btn plus" onclick="document.getElementById('qty').stepUp()">+</button>
+              </div>
+              <button class="cta-btn primary-btn detail-add-btn" onclick='addToCart(event, ${productJSON}, document.getElementById("qty").value)'>
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    async function loadRelatedProducts(category, currentId) {
+      const relatedGrid = document.getElementById("relatedProductsGrid");
+      if(!relatedGrid) return;
+      
+      const cachedData = localStorage.getItem("premium_products");
+      let all = [];
+      
+      if(cachedData) {
+        all = JSON.parse(cachedData);
+      } else {
+        const res = await fetch("https://fakestoreapi.com/products");
+        all = await res.json();
+      }
+      
+      // Filter out current product and grab exactly 4 items in same category
+      const related = all.filter(p => p.category === category && p.id !== currentId).slice(0, 4);
+      
+      if(related.length === 0) {
+        document.querySelector('.related-products').style.display = 'none';
+        return;
+      }
+      
+      relatedGrid.innerHTML = "";
+      
+      related.forEach(product => {
+        const card = document.createElement("div");
+        card.classList.add("product-card");
+        
+        const productJSON = JSON.stringify(product).replace(/'/g, "&#39;");
+        const fullStars = Math.floor(product.rating.rate);
+        const starHTML = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
+  
+        card.innerHTML = `
+          <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1;">
+            <div class="product-img-wrapper">
+              <img loading="lazy" src="${product.image}" alt="${product.title}">
+            </div>
+            <div class="product-card-body" style="padding-bottom: 0;">
+              <span class="product-category">${product.category}</span>
+              <h3 class="product-title" title="${product.title}">${product.title}</h3>
+              
+              <div class="product-rating">
+                <i>${starHTML}</i>
+                <span>(${product.rating.count})</span>
+              </div>
+            </div>
+          </a>
+          <div class="product-footer" style="padding: 16px 24px 24px; margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+            <span class="product-price">$${product.price.toFixed(2)}</span>
+            <button class="add-to-cart-btn" aria-label="Add to cart" onclick='addToCart(event, ${productJSON})'>
+              <span style="font-size: 18px;">+</span>
+            </button>
+          </div>
+        `;
+        relatedGrid.appendChild(card);
+      });
+    }
+    
+    // Execute on page load
+    loadProductDetail();
+  }
+
 });

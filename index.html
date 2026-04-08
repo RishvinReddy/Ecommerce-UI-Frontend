@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +10,13 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
   <!-- Header -->
   <header class="header" id="header">
     <div class="container">
-      
+
       <!-- Logo -->
       <a href="#" class="logo">Shop<span class="highlight">X</span></a>
 
@@ -42,7 +44,7 @@
         <div class="search-container">
           <input type="text" placeholder="Search products..." class="search" id="searchInput">
           <i class="fas fa-search search-icon"></i>
-          
+
           <!-- Search Suggestions -->
           <div class="search-suggestions" id="searchSuggestions">
             <ul>
@@ -58,7 +60,7 @@
         <div class="cart" id="cartToggle">
           <i class="fas fa-shopping-cart"></i>
           <span class="cart-count">3</span>
-          
+
           <!-- Cart Preview Popup -->
           <div class="cart-popup" id="cartPopup">
             <div class="cart-popup-header">
@@ -101,19 +103,21 @@
   <section class="hero">
     <div class="hero-content">
       <div class="hero-text">
-        <h1 class="hero-title">Shop <span class="highlight">Smarter.</span><br>Live <span class="highlight">Better.</span></h1>
+        <h1 class="hero-title">Shop <span class="highlight">Smarter.</span><br>Live <span
+            class="highlight">Better.</span></h1>
         <p class="hero-subtitle">Discover premium tech and lifestyle products curated for the modern era.</p>
         <div class="hero-buttons">
           <a href="#" class="cta-btn primary-btn">Shop Now</a>
           <a href="#" class="cta-btn secondary-btn">Explore</a>
         </div>
       </div>
-      
+
       <!-- Glassmorphism featured product card -->
       <div class="hero-image-wrapper">
         <div class="glass-card featured-product">
           <div class="product-badge">New Arrival</div>
-          <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop" alt="Premium Headphones" class="featured-img">
+          <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop"
+            alt="Premium Headphones" class="featured-img">
           <div class="product-info">
             <h3>Sony WH-1000XM5</h3>
             <p class="price">$399.00</p>
@@ -121,7 +125,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="scroll-down">
       <i class="fas fa-arrow-down"></i>
     </div>
@@ -132,7 +136,7 @@
     <div class="products-container">
       <div class="products-header">
         <h2 class="section-title">Trending <span class="highlight">Products</span></h2>
-        
+
         <!-- Category Filters -->
         <div class="product-filters" id="productFilters">
           <button class="filter-btn active" data-filter="all">All</button>
@@ -142,7 +146,7 @@
           <button class="filter-btn" data-filter="women's clothing">Women's</button>
         </div>
       </div>
-      
+
       <!-- Dynamic Product Grid -->
       <div class="product-grid" id="productGrid">
         <!-- Products will be injected here via JS -->
@@ -151,4 +155,5 @@
   </section>
   <script src="scripts/app.js"></script>
 </body>
+
 </html>

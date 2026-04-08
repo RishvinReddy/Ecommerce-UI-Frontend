@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | ShopX</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+
+      <!-- Logo -->
+      <a href="index.html" class="logo">Shop<span class="highlight">X</span></a>
+
+      <!-- Navigation Links -->
+      <nav class="nav" id="navMenu">
+        <ul>
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li class="dropdown">
+            <a href="#" class="nav-link">Products <i class="fas fa-chevron-down dropdown-icon"></i></a>
+            <ul class="dropdown-menu">
+              <li><a href="index.html#products">Electronics</a></li>
+              <li><a href="index.html#products">Fashion</a></li>
+              <li><a href="index.html#products">Home & Living</a></li>
+              <li><a href="index.html#products">Accessories</a></li>
+            </ul>
+          </li>
+          <li><a href="#" class="nav-link">About</a></li>
+          <li><a href="#" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Section -->
+      <div class="header-right">
+        <!-- Search Bar -->
+        <div class="search-container">
+          <input type="text" placeholder="Search products..." class="search" id="searchInput">
+          <i class="fas fa-search search-icon"></i>
+
+          <!-- Search Suggestions -->
+          <div class="search-suggestions" id="searchSuggestions">
+            <ul>
+              <li><i class="fas fa-search"></i> MacBook Pro 16"</li>
+              <li><i class="fas fa-search"></i> iPhone 15 Pro Max</li>
+              <li><i class="fas fa-search"></i> Sony WH-1000XM5</li>
+              <li><i class="fas fa-search"></i> Air Jordans 1</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Cart -->
+        <div class="cart" id="cartToggle">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+
+          <!-- Cart Preview Popup -->
+          <div class="cart-popup" id="cartPopup">
+            <div class="cart-popup-header">
+              <h4>Your Cart</h4>
+            </div>
+            <div class="cart-items" id="cartItemsContainer">
+              <!-- Dynamically populated via JS -->
+            </div>
+            <div class="cart-popup-footer">
+              <div class="total">Total: <span id="cartTotalDisplay">$0.00</span></div>
+              <button class="checkout-btn">Checkout</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hamburger -->
+        <div class="hamburger" id="hamburger">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Details Section -->
+  <section class="product-detail-wrapper">
+    <div class="container breadcrumb-nav">
+      <a href="index.html">Home</a> / <a href="index.html#products">Products</a> / <span id="breadcrumbTitle">Loading...</span>
+    </div>
+    
+    <div class="container" id="productDetail">
+      <div class="loading-state" style="padding: 100px 0;">
+        <div class="loader-spinner"></div>
+        <p>Loading premium product details...</p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Related Products (Challenge) -->
+  <section class="products related-products">
+    <div class="products-container">
+      <div class="products-header">
+        <h2 class="section-title">Similar <span class="highlight">Products</span></h2>
+      </div>
+      <div class="product-grid" id="relatedProductsGrid">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </section>
+
+  <script src="scripts/app.js"></script>
+</body>
+
+</html>
