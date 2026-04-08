@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders | ShopX</title>
+  <meta name="description" content="View your order history on ShopX.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/auth.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .orders-section {
+      padding: 40px 5% 100px;
+      background: #f8f9fa;
+      min-height: calc(100vh - 80px);
+    }
+    .orders-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .orders-header {
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .order-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .order-card-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+    .order-id {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+    }
+    .order-date {
+      font-size: 13px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .order-total {
+      font-size: 16px;
+      font-weight: 800;
+      color: #007aff;
+    }
+    .order-status {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(50, 215, 75, 0.1);
+      color: #32d74b;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+    .order-items {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .o-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .o-img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .o-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+    }
+    .o-meta {
+      font-size: 12px;
+      color: #888;
+    }
+    .unauthed-message {
+      text-align: center;
+      padding: 60px 0;
+    }
+    .unauthed-message h3 {
+      font-size: 24px;
+      color: #111;
+      margin-bottom: 10px;
+    }
+    .unauthed-message p {
+      color: #777;
+    }
+    #ordersLoader {
+      text-align: center;
+      font-size: 24px;
+      color: #007aff;
+      padding: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">Shop<span class="highlight">X</span></a>
+      <nav class="nav" id="navMenu">
+        <ul>
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="product.html" class="nav-link">Products</a></li>
+          <li><a href="#" class="nav-link">About</a></li>
+        </ul>
+      </nav>
+      <div class="nav-icons">
+        <a href="index.html" class="search-icon"><i class="fas fa-search"></i></a>
+        <div class="cart-btn-wrapper">
+          <a href="#" class="cart-icon" id="cartBtn"><i class="fas fa-shopping-bag"></i><span class="cart-badge" id="cartCount">0</span></a>
+          <!-- Cart Popup -->
+          <div class="cart-popup glass-panel" id="cartPopup">
+            <div class="cart-popup-header">
+              <span class="cart-popup-title">Your Cart</span>
+              <button class="clear-cart-btn" id="clearCartPopupBtn" style="background:none;border:none;color:#ff3b30;font-size:12px;cursor:pointer;font-weight:600;">Clear All</button>
+            </div>
+            <div class="cart-popup-items" id="cartPopupItems"></div>
+            <div class="cart-popup-footer">
+              <div class="cart-popup-total"><span>Total:</span> <span id="cartPopupTotal">$0.00</span></div>
+              <a href="cart.html" class="checkout-btn">View Full Cart</a>
+            </div>
+          </div>
+        </div>
+        <div class="hamburger" id="hamburger"><i class="fas fa-bars"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Orders Section -->
+  <section class="orders-section">
+    <div class="orders-container">
+      <div class="orders-header">
+        <h2 class="section-title">My <span class="highlight">Orders</span></h2>
+      </div>
+      
+      <div id="ordersContent">
+         <div id="ordersLoader"><i class="fas fa-spinner fa-spin"></i></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script type="module" src="scripts/firebase-config.js"></script>
+  <script type="module" src="scripts/auth.js"></script>
+  <script type="module" src="scripts/app.js"></script>
+  
+  <script type="module">
+    import { db, collection, query, where, orderBy, getDocs } from "./scripts/firebase-config.js";
+    
+    document.addEventListener("DOMContentLoaded", () => {
+       const ordersContent = document.getElementById("ordersContent");
+       
+       window.addEventListener('auth-changed', async (e) => {
+          const user = e.detail.user;
+          if(!user) {
+             ordersContent.innerHTML = `
+               <div class="unauthed-message">
+                 <h3>Sign In Required</h3>
+                 <p>Please log in to view your order history.</p>
+               </div>
+             `;
+             return;
+          }
+          
+          // User is logged in, fetch orders
+          try {
+             ordersContent.innerHTML = '<div id="ordersLoader"><i class="fas fa-spinner fa-spin"></i> Fetching your orders...</div>';
+             
+             const q = query(
+                 collection(db, "orders"), 
+                 where("userId", "==", user.uid),
+                 orderBy("date", "desc")
+             );
+             
+             const querySnapshot = await getDocs(q);
+             
+             if(querySnapshot.empty) {
+                ordersContent.innerHTML = `
+                  <div class="unauthed-message">
+                    <h3>No Orders Yet</h3>
+                    <p>Looks like you haven't placed any orders. Start shopping!</p>
+                    <a href="index.html" class="nav-btn login-btn" style="display:inline-block; margin-top:16px; text-decoration:none;">Shop Now</a>
+                  </div>
+                `;
+                return;
+             }
+             
+             let html = "";
+             querySnapshot.forEach((doc) => {
+               const order = doc.data();
+               const date = new Date(order.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+               
+               let itemsHtml = order.items.map(item => `
+                 <div class="o-item">
+                   <img src="${item.image}" class="o-img">
+                   <div>
+                     <div class="o-title">${item.title}</div>
+                     <div class="o-meta">Qty: ${item.quantity} · $${item.price.toFixed(2)}</div>
+                   </div>
+                 </div>
+               `).join('');
+               
+               html += `
+                 <div class="order-card">
+                   <div class="order-card-header">
+                     <div>
+                       <div class="order-id">Order #${doc.id.substring(0, 8).toUpperCase()}</div>
+                       <div class="order-date">${date}</div>
+                     </div>
+                     <div style="text-align: right;">
+                       <div class="order-total">$${order.total.toFixed(2)}</div>
+                       <div class="order-status">Confirmed</div>
+                     </div>
+                   </div>
+                   <div class="order-items">
+                     ${itemsHtml}
+                   </div>
+                 </div>
+               `;
+             });
+             
+             ordersContent.innerHTML = html;
+             
+          } catch(err) {
+             console.error("Error fetching orders:", err);
+             // Note: Firestore requires a composite index for where() + orderBy() on different fields.
+             // If we get an error here, the console will log a direct link to create the index.
+             ordersContent.innerHTML = `
+               <div class="unauthed-message">
+                 <h3 style="color:#ff3b30">Error</h3>
+                 <p>Could not fetch orders. Make sure Firestore rules and indexes are configured.</p>
+                 <p style="font-size:12px; color:#888;">${err.message}</p>
+               </div>
+             `;
+          }
+       });
+       
+    });
+  </script>
+
+</body>
+</html>

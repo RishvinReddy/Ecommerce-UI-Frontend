@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | ShopX</title>
+  <meta name="description" content="Secure checkout on ShopX. Fast, safe, and easy.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/auth.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">Shop<span class="highlight">X</span></a>
+
+      <nav class="nav" id="navMenu">
+        <ul>
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="index.html#products" class="nav-link">Products</a></li>
+          <li><a href="cart.html" class="nav-link">Cart</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-right">
+        <div class="cart" id="cartToggle">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+          <div class="cart-popup" id="cartPopup">
+            <div class="cart-popup-header">
+              <h4>Your Cart</h4>
+              <button class="clear-cart-btn" id="clearCartBtn" title="Clear all"><i class="fas fa-trash-alt"></i></button>
+            </div>
+            <div class="cart-items" id="cartItemsContainer"></div>
+            <div class="cart-popup-footer">
+              <div class="total">Total: <span id="cartTotalDisplay">$0.00</span></div>
+              <button class="checkout-btn" onclick="window.location.href='checkout.html'">Checkout</button>
+            </div>
+          </div>
+        </div>
+        <div class="hamburger" id="hamburger">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== CHECKOUT PAGE ===== -->
+  <section class="checkout-section">
+    <div class="checkout-container">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-nav" style="margin-bottom: 28px;">
+        <a href="index.html">Home</a> / <a href="cart.html">Cart</a> / <span>Checkout</span>
+      </div>
+
+      <!-- Step Progress Bar -->
+      <div class="checkout-steps" id="checkoutSteps">
+        <div class="step active" id="step-indicator-1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Shipping</span>
+        </div>
+        <div class="step-line" id="line-1-2"></div>
+        <div class="step" id="step-indicator-2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Payment</span>
+        </div>
+        <div class="step-line" id="line-2-3"></div>
+        <div class="step" id="step-indicator-3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Review</span>
+        </div>
+      </div>
+
+      <!-- Main Layout -->
+      <div class="checkout-layout">
+
+        <!-- LEFT: Form Steps -->
+        <div class="checkout-form-panel">
+
+          <!-- ===== STEP 1: Shipping ===== -->
+          <div class="checkout-step-panel active" id="step-panel-1">
+            <h2 class="step-title"><i class="fas fa-map-marker-alt"></i> Shipping Information</h2>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="firstName">First Name *</label>
+                <input type="text" id="firstName" class="form-input" placeholder="John" required>
+              </div>
+              <div class="form-group">
+                <label for="lastName">Last Name *</label>
+                <input type="text" id="lastName" class="form-input" placeholder="Doe" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email Address *</label>
+              <input type="email" id="email" class="form-input" placeholder="john@example.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" class="form-input" placeholder="+1 (555) 000-0000">
+            </div>
+
+            <div class="form-group">
+              <label for="address">Street Address *</label>
+              <input type="text" id="address" class="form-input" placeholder="123 Main Street, Apt 4B" required>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" class="form-input" placeholder="New York" required>
+              </div>
+              <div class="form-group">
+                <label for="state">State / Province *</label>
+                <input type="text" id="state" class="form-input" placeholder="NY" required>
+              </div>
+              <div class="form-group">
+                <label for="zip">ZIP / Postal Code *</label>
+                <input type="text" id="zip" class="form-input" placeholder="10001" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="country">Country *</label>
+              <select id="country" class="form-input form-select" required>
+                <option value="">Select Country</option>
+                <option value="US">United States</option>
+                <option value="IN">India</option>
+                <option value="GB">United Kingdom</option>
+                <option value="CA">Canada</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="SG">Singapore</option>
+                <option value="AE">UAE</option>
+              </select>
+            </div>
+
+            <div class="checkout-shipping-options">
+              <h4 class="shipping-option-title">Shipping Method</h4>
+              <label class="shipping-option selected" id="ship-standard">
+                <input type="radio" name="shipping" value="free" checked>
+                <div class="shipping-option-content">
+                  <span class="s-name">Standard Delivery</span>
+                  <span class="s-time">5–7 business days</span>
+                </div>
+                <span class="s-price free-tag">FREE</span>
+              </label>
+              <label class="shipping-option" id="ship-express">
+                <input type="radio" name="shipping" value="express">
+                <div class="shipping-option-content">
+                  <span class="s-name">Express Delivery</span>
+                  <span class="s-time">1–2 business days</span>
+                </div>
+                <span class="s-price">$9.99</span>
+              </label>
+              <label class="shipping-option" id="ship-overnight">
+                <input type="radio" name="shipping" value="overnight">
+                <div class="shipping-option-content">
+                  <span class="s-name">Overnight</span>
+                  <span class="s-time">Next business day</span>
+                </div>
+                <span class="s-price">$19.99</span>
+              </label>
+            </div>
+
+            <p class="form-error" id="shippingError" style="display:none;"></p>
+            <button class="cta-btn primary-btn step-next-btn" id="toPaymentBtn">
+              Continue to Payment <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- ===== STEP 2: Payment ===== -->
+          <div class="checkout-step-panel" id="step-panel-2">
+            <h2 class="step-title"><i class="fas fa-credit-card"></i> Payment Method</h2>
+
+            <!-- Payment Method Tabs -->
+            <div class="payment-tabs">
+              <button class="pay-tab active" data-tab="card">
+                <i class="fas fa-credit-card"></i> Card
+              </button>
+              <button class="pay-tab" data-tab="paypal">
+                <i class="fab fa-paypal"></i> PayPal
+              </button>
+              <button class="pay-tab" data-tab="gpay">
+                <i class="fab fa-google-pay"></i> G Pay
+              </button>
+              <button class="pay-tab" data-tab="upi">
+                <i class="fas fa-mobile-alt"></i> UPI
+              </button>
+            </div>
+
+            <!-- Card Tab -->
+            <div class="pay-tab-content active" id="tab-card">
+              <div class="card-preview" id="cardPreview">
+                <div class="card-chip"><i class="fas fa-sim-card"></i></div>
+                <div class="card-number-display" id="cardNumDisplay">•••• •••• •••• ••••</div>
+                <div class="card-bottom">
+                  <div>
+                    <p class="card-label">Card Holder</p>
+                    <p class="card-value" id="cardHolderDisplay">FULL NAME</p>
+                  </div>
+                  <div>
+                    <p class="card-label">Expires</p>
+                    <p class="card-value" id="cardExpiryDisplay">MM/YY</p>
+                  </div>
+                  <div class="card-logo"><i class="fab fa-cc-visa" style="font-size:28px;"></i></div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cardNumber">Card Number *</label>
+                <div class="input-icon-group">
+                  <input type="text" id="cardNumber" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                  <i class="fas fa-lock input-icon"></i>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cardName">Cardholder Name *</label>
+                <input type="text" id="cardName" class="form-input" placeholder="John Doe" required>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="cardExpiry">Expiry Date *</label>
+                  <input type="text" id="cardExpiry" class="form-input" placeholder="MM/YY" maxlength="5" required>
+                </div>
+                <div class="form-group">
+                  <label for="cardCVV">CVV *</label>
+                  <div class="input-icon-group">
+                    <input type="password" id="cardCVV" class="form-input" placeholder="•••" maxlength="4" required>
+                    <i class="fas fa-question-circle input-icon" title="3-4 digits on the back of your card"></i>
+                  </div>
+                </div>
+              </div>
+
+              <label class="save-card-label">
+                <input type="checkbox" id="saveCard"> Save card for future purchases
+              </label>
+            </div>
+
+            <!-- PayPal Tab -->
+            <div class="pay-tab-content" id="tab-paypal">
+              <div class="alt-payment-block paypal-block">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" class="paypal-logo">
+                <p>You will be redirected to PayPal to complete your payment securely.</p>
+                <button class="paypal-btn">
+                  <i class="fab fa-paypal"></i> Pay with PayPal
+                </button>
+              </div>
+            </div>
+
+            <!-- Google Pay Tab -->
+            <div class="pay-tab-content" id="tab-gpay">
+              <div class="alt-payment-block">
+                <div class="gpay-icon"><i class="fab fa-google"></i> Pay</div>
+                <p>Complete your payment instantly using Google Pay.</p>
+                <button class="gpay-btn">
+                  <i class="fab fa-google-pay"></i> Pay with Google Pay
+                </button>
+              </div>
+            </div>
+
+            <!-- UPI Tab -->
+            <div class="pay-tab-content" id="tab-upi">
+              <div class="alt-payment-block">
+                <p class="upi-title">UPI Payment</p>
+                <div class="form-group" style="max-width:360px;">
+                  <label for="upiId">UPI ID / VPA *</label>
+                  <input type="text" id="upiId" class="form-input" placeholder="yourname@upi">
+                </div>
+                <div class="upi-apps">
+                  <button class="upi-app-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay"> GPay</button>
+                  <button class="upi-app-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm"> Paytm</button>
+                  <button class="upi-app-btn"><i class="fas fa-mobile-alt" style="font-size:22px;color:#6739b7;"></i> PhonePe</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="form-error" id="paymentError" style="display:none;"></p>
+            <div class="step-nav-btns">
+              <button class="cta-btn secondary-btn step-back-btn" id="backToShippingBtn">
+                <i class="fas fa-arrow-left"></i> Back
+              </button>
+              <button class="cta-btn primary-btn step-next-btn" id="toReviewBtn">
+                Review Order <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ===== STEP 3: Review ===== -->
+          <div class="checkout-step-panel" id="step-panel-3">
+            <h2 class="step-title"><i class="fas fa-clipboard-list"></i> Review Your Order</h2>
+
+            <div class="review-block" id="reviewShipping"></div>
+            <div class="review-block" id="reviewPayment"></div>
+            <div class="review-block" id="reviewItems"></div>
+
+            <div class="step-nav-btns">
+              <button class="cta-btn secondary-btn step-back-btn" id="backToPaymentBtn">
+                <i class="fas fa-arrow-left"></i> Back
+              </button>
+              <button class="cta-btn primary-btn place-order-btn" id="placeOrderBtn">
+                <i class="fas fa-lock"></i>&nbsp; Place Order Securely
+              </button>
+            </div>
+          </div>
+
+          <!-- ===== SUCCESS SCREEN ===== -->
+          <div class="checkout-step-panel success-panel" id="step-panel-success">
+            <div class="success-animation">
+              <div class="success-checkmark">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+            <h2 class="success-title">Order Placed Successfully! 🎉</h2>
+            <p class="success-msg">Thank you for shopping with ShopX! Your order is being processed.<br>A confirmation email has been sent to <strong id="confirmEmail"></strong>.</p>
+            <div class="order-ref">Order #<span id="orderRef"></span></div>
+            <div class="success-actions">
+              <a href="index.html" class="cta-btn primary-btn" style="text-decoration:none;">Continue Shopping</a>
+              <a href="index.html" class="cta-btn secondary-btn" style="text-decoration:none;">Track Order</a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Order Summary -->
+        <aside class="checkout-summary-panel" id="checkoutSummaryPanel">
+          <h3 class="summary-title">Order Summary</h3>
+          <div id="checkoutSummaryItems">
+            <!-- Populated by JS -->
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row"><span>Subtotal</span><span id="coSubtotal">$0.00</span></div>
+          <div class="summary-row"><span>Shipping</span><span id="coShipping" class="shipping-free">FREE</span></div>
+          <div class="summary-row"><span>Tax (8%)</span><span id="coTax">$0.00</span></div>
+          <div class="summary-divider"></div>
+          <div class="summary-row summary-total-row"><span>Total</span><span id="coTotal">$0.00</span></div>
+          <div class="secure-badges" style="margin-top:16px;">
+            <span><i class="fas fa-shield-alt"></i> SSL Encrypted</span>
+            <span><i class="fas fa-lock"></i> Secure</span>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="scripts/firebase-config.js"></script>
+  <script type="module" src="scripts/auth.js"></script>
+  <script type="module" src="scripts/app.js"></script>
+</body>
+
+</html>

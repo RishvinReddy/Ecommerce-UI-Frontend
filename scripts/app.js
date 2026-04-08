@@ -1,3 +1,5 @@
+import { db, doc, getDoc, setDoc, collection, addDoc } from "./firebase-config.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   // Mobile Nav Toggle
   const hamburger = document.getElementById("hamburger");
@@ -86,13 +88,63 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
 
   // --- Utility Functions ---
-  function getCart() {
+  window.getCart = function() {
     return JSON.parse(localStorage.getItem("premium_cart")) || [];
+  };
+  const getCart = window.getCart;
+
+  window.saveCart = async function(cartArray) {
+    localStorage.setItem("premium_cart", JSON.stringify(cartArray));
+    if (window.currentUser) {
+      try {
+        await setDoc(doc(db, "carts", window.currentUser.uid), { items: cartArray });
+      } catch (e) { console.error("Firebase save error", e); }
+    }
+  };
+
+  window.syncCartWithFirebase = async function(user) {
+    const localCart = getCart();
+    try {
+      const cartRef = doc(db, "carts", user.uid);
+      const snap = await getDoc(cartRef);
+      let fbCart = [];
+      if (snap.exists()) {
+        fbCart = snap.data().items || [];
+      }
+      
+      const merged = [...fbCart];
+      localCart.forEach(localItem => {
+         const existing = merged.find(i => i.id === localItem.id && i.size === localItem.size && i.color === localItem.color);
+         if (existing) existing.quantity += localItem.quantity;
+         else merged.push(localItem);
+      });
+      
+      await window.saveCart(merged);
+      
+      updateCartCount();
+      renderCartPopup();
+      if(window.location.pathname.includes("cart.html")) {
+          if(typeof loadCartPage === 'function') loadCartPage();
+      }
+      if(typeof updateCheckoutSummary === 'function') updateCheckoutSummary();
+      
+    } catch(e) {
+      console.error("Cart sync error", e);
+    }
   }
 
-  function saveCart(cart) {
-    localStorage.setItem("premium_cart", JSON.stringify(cart));
-  }
+  window.addEventListener('auth-changed', async (e) => {
+    const user = e.detail.user;
+    if(user) {
+       await window.syncCartWithFirebase(user);
+    } else {
+       updateCartCount();
+       renderCartPopup();
+       if(window.location.pathname.includes("cart.html")) {
+           if(typeof loadCartPage === 'function') loadCartPage();
+       }
+    }
+  });
 
   // --- Update cart badge count ---
   window.updateCartCount = function() {
@@ -851,6 +903,367 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Run on page load
     loadCartPage();
+  }
+
+  // ==========================================
+  // CHECKOUT PAGE LOGIC (checkout.html)
+  // ==========================================
+  const checkoutContainer = document.querySelector(".checkout-container");
+
+  if (checkoutContainer || window.location.pathname.includes("checkout.html")) {
+    let currentStep = 1;
+    const cart = getCart();
+    let shippingCost = 0; // Default to free if standard selected
+    
+    // Auto-redirect if cart is empty and trying to view checkout
+    if (cart.length === 0) {
+      alert("Your cart is empty. Redirecting to home.");
+      window.location.href = "index.html";
+    }
+
+    // --- DOM Elements ---
+    const stepIndicators = [
+      document.getElementById("step-indicator-1"),
+      document.getElementById("step-indicator-2"),
+      document.getElementById("step-indicator-3")
+    ];
+    const stepLines = [
+      document.getElementById("line-1-2"),
+      document.getElementById("line-2-3")
+    ];
+    const stepPanels = [
+      document.getElementById("step-panel-1"),
+      document.getElementById("step-panel-2"),
+      document.getElementById("step-panel-3"),
+      document.getElementById("step-panel-success") // 4th panel for success
+    ];
+
+    // Buttons
+    const toPaymentBtn = document.getElementById("toPaymentBtn");
+    const backToShippingBtn = document.getElementById("backToShippingBtn");
+    const toReviewBtn = document.getElementById("toReviewBtn");
+    const backToPaymentBtn = document.getElementById("backToPaymentBtn");
+    const placeOrderBtn = document.getElementById("placeOrderBtn");
+    const shippingError = document.getElementById("shippingError");
+    const paymentError = document.getElementById("paymentError");
+
+    // --- Order Summary ---
+    function updateCheckoutSummary() {
+      const summaryItemsContainer = document.getElementById("checkoutSummaryItems");
+      if (!summaryItemsContainer) return;
+
+      let subtotal = 0;
+      
+      summaryItemsContainer.innerHTML = cart.map(item => {
+        subtotal += item.price * item.quantity;
+        return `
+          <div class="checkout-summary-item">
+            <img src="${item.image}" alt="${item.title}" class="checkout-summary-img">
+            <div class="checkout-summary-name">${item.title}</div>
+            <div style="font-size: 12px; color: #888;">Qty: ${item.quantity}</div>
+            <div class="checkout-summary-price">$${(item.price * item.quantity).toFixed(2)}</div>
+          </div>
+        `;
+      }).join("");
+
+      const tax = subtotal * 0.08;
+      
+      // Update shipping cost based on selection
+      const selectedShipping = document.querySelector('input[name="shipping"]:checked');
+      if (selectedShipping) {
+        if (selectedShipping.value === "free") shippingCost = 0;
+        else if (selectedShipping.value === "express") shippingCost = 9.99;
+        else if (selectedShipping.value === "overnight") shippingCost = 19.99;
+      }
+
+      const total = subtotal + tax + shippingCost;
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+      set("coSubtotal", "$" + subtotal.toFixed(2));
+      set("coTax", "$" + tax.toFixed(2));
+      
+      const shippingEl = document.getElementById("coShipping");
+      if (shippingEl) {
+        shippingEl.textContent = shippingCost === 0 ? "FREE" : "$" + shippingCost.toFixed(2);
+        shippingEl.className = shippingCost === 0 ? "shipping-free" : "";
+      }
+
+      set("coTotal", "$" + total.toFixed(2));
+      
+      // Build Review Step summary data as well if on that step
+      renderReviewStep(subtotal, tax, total);
+    }
+
+    // Initialize summary once
+    updateCheckoutSummary();
+
+    // --- Shipping Options Listeners ---
+    const shippingRadios = document.querySelectorAll('input[name="shipping"]');
+    shippingRadios.forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        document.querySelectorAll(".shipping-option").forEach(opt => opt.classList.remove("selected"));
+        e.target.closest(".shipping-option").classList.add("selected");
+        updateCheckoutSummary();
+      });
+    });
+
+    // --- Step Navigation Functions ---
+    function goToStep(stepNumber) {
+      // Hide all panels
+      stepPanels.forEach(p => { if (p) p.classList.remove("active"); });
+      
+      if (stepNumber <= 3) {
+        // Show target panel
+        if (stepPanels[stepNumber - 1]) stepPanels[stepNumber - 1].classList.add("active");
+        
+        // Update indicators
+        stepIndicators.forEach((ind, idx) => {
+          if (!ind) return;
+          ind.classList.remove("active", "done");
+          if (idx < stepNumber - 1) ind.classList.add("done");
+          else if (idx === stepNumber - 1) ind.classList.add("active");
+        });
+
+        // Update lines
+        stepLines.forEach((line, idx) => {
+          if (!line) return;
+          line.classList.remove("done");
+          if (idx < stepNumber - 1) line.classList.add("done");
+        });
+        
+        currentStep = stepNumber;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function showSuccess() {
+      // Hide standard step panels & summary
+      stepPanels.forEach(p => { if (p) p.classList.remove("active"); });
+      document.getElementById("checkoutSteps").style.display = "none";
+      document.getElementById("checkoutSummaryPanel").style.display = "none";
+      document.querySelector(".checkout-layout").style.gridTemplateColumns = "1fr";
+      
+      // Show success
+      stepPanels[3].classList.add("active");
+      
+      // Populate order ref & email
+      document.getElementById("confirmEmail").textContent = document.getElementById("email").value || "your email";
+      document.getElementById("orderRef").textContent = Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Clear Cart
+      saveCart([]);
+      updateCartCount();
+      renderCartPopup();
+    }
+
+    // Validation helpers
+    function validateShipping() {
+      const requiredIds = ["firstName", "lastName", "email", "address", "city", "state", "zip", "country"];
+      let isValid = true;
+      requiredIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.value.trim()) {
+          isValid = false;
+          el.style.borderColor = "#ff3b30";
+        } else if (el) {
+          el.style.borderColor = "#e1e1e1"; // reset
+        }
+      });
+      return isValid;
+    }
+
+    function validatePayment() {
+      // Basic check based on active tab
+      const activeTab = document.querySelector(".pay-tab.active").dataset.tab;
+      let isValid = true;
+      
+      if (activeTab === "card") {
+        const requiredIds = ["cardNumber", "cardName", "cardExpiry", "cardCVV"];
+        requiredIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && !el.value.trim()) {
+            isValid = false;
+            el.style.borderColor = "#ff3b30";
+          } else if (el) {
+            el.style.borderColor = "#e1e1e1";
+          }
+        });
+      } else if (activeTab === "upi") {
+         const upi = document.getElementById("upiId");
+         if(upi && !upi.value.trim()) {
+            isValid = false;
+            upi.style.borderColor = "#ff3b30";
+         } else if(upi) {
+            upi.style.borderColor = "#e1e1e1";
+         }
+      }
+      return isValid;
+    }
+
+    // --- Buttons Event Listeners ---
+    if (toPaymentBtn) {
+      toPaymentBtn.addEventListener("click", () => {
+        if (validateShipping()) {
+          shippingError.style.display = "none";
+          goToStep(2);
+        } else {
+          shippingError.textContent = "Please fill in all required fields.";
+          shippingError.style.display = "block";
+        }
+      });
+    }
+
+    if (backToShippingBtn) {
+      backToShippingBtn.addEventListener("click", () => goToStep(1));
+    }
+
+    if (toReviewBtn) {
+      toReviewBtn.addEventListener("click", () => {
+        if (validatePayment()) {
+          paymentError.style.display = "none";
+          updateCheckoutSummary(); // make sure review data is fresh
+          goToStep(3);
+        } else {
+          paymentError.textContent = "Please complete your payment details.";
+          paymentError.style.display = "block";
+        }
+      });
+    }
+
+    if (backToPaymentBtn) {
+      backToPaymentBtn.addEventListener("click", () => goToStep(2));
+    }
+
+    if (placeOrderBtn) {
+      placeOrderBtn.addEventListener("click", async () => {
+        // Change button state
+        placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        placeOrderBtn.disabled = true;
+        
+        const cart = window.getCart();
+        const orderData = {
+           items: cart,
+           total: parseFloat(document.getElementById("coTotal").textContent.replace('$','')),
+           date: new Date().toISOString(),
+           userEmail: window.currentUser ? window.currentUser.email : document.getElementById("email").value,
+           userId: window.currentUser ? window.currentUser.uid : "guest"
+        };
+        
+        try {
+           if(window.currentUser) {
+              await addDoc(collection(db, "orders"), orderData);
+           } else {
+              // Simulate API call for guest
+              await new Promise(resolve => setTimeout(resolve, 1500));
+           }
+           showSuccess();
+        } catch(e) {
+           console.error(e);
+           alert("Checkout failed. Please try again.");
+           placeOrderBtn.innerHTML = 'Place Order Securely';
+           placeOrderBtn.disabled = false;
+        }
+      });
+    }
+
+    // --- Payment Tabs ---
+    const payTabs = document.querySelectorAll(".pay-tab");
+    const payContents = document.querySelectorAll(".pay-tab-content");
+    payTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        payTabs.forEach(t => t.classList.remove("active"));
+        payContents.forEach(c => c.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
+      });
+    });
+
+    // --- Live Card Preview Logic ---
+    const cNumInput = document.getElementById("cardNumber");
+    const cNumDisplay = document.getElementById("cardNumDisplay");
+    if (cNumInput) {
+      cNumInput.addEventListener("input", (e) => {
+        // auto format spaces
+        let val = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formatted = val.match(/.{1,4}/g)?.join(' ') || '';
+        e.target.value = formatted;
+        cNumDisplay.textContent = formatted || "•••• •••• •••• ••••";
+      });
+    }
+
+    const cNameInput = document.getElementById("cardName");
+    const cNameDisplay = document.getElementById("cardHolderDisplay");
+    if (cNameInput) {
+      cNameInput.addEventListener("input", (e) => {
+        cNameDisplay.textContent = e.target.value || "FULL NAME";
+      });
+    }
+
+    const cExpInput = document.getElementById("cardExpiry");
+    const cExpDisplay = document.getElementById("cardExpiryDisplay");
+    if (cExpInput) {
+      cExpInput.addEventListener("input", (e) => {
+        let val = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        if (val.length >= 2 && !val.includes('/')) {
+            val = val.substring(0, 2) + '/' + val.substring(2);
+        }
+        e.target.value = val;
+        cExpDisplay.textContent = val || "MM/YY";
+      });
+    }
+
+    // --- Render Review Step Data ---
+    function renderReviewStep(subtotal, tax, total) {
+      const reviewShipping = document.getElementById("reviewShipping");
+      const reviewPayment = document.getElementById("reviewPayment");
+      const reviewItems = document.getElementById("reviewItems");
+
+      if (!reviewShipping || !reviewPayment || !reviewItems) return;
+
+      // 1. Shipping info
+      const name = `${document.getElementById("firstName").value} ${document.getElementById("lastName").value}`;
+      const address = document.getElementById("address").value;
+      const cSZ = `${document.getElementById("city").value}, ${document.getElementById("state").value} ${document.getElementById("zip").value}`;
+      const shipMethod = document.querySelector('input[name="shipping"]:checked')?.closest('.shipping-option').querySelector('.s-name').textContent || 'Standard';
+
+      reviewShipping.innerHTML = `
+        <h4>Shipping Details</h4>
+        <div class="review-row"><span>Name:</span> <span>${name || 'N/A'}</span></div>
+        <div class="review-row"><span>Address:</span> <span>${address || 'N/A'}, ${cSZ}</span></div>
+        <div class="review-row"><span>Method:</span> <span>${shipMethod}</span></div>
+      `;
+
+      // 2. Payment info
+      const activeTab = document.querySelector(".pay-tab.active").dataset.tab;
+      let payInfo = "Credit Card ending in " + (document.getElementById("cardNumber").value.slice(-4) || '****');
+      if (activeTab === "paypal") payInfo = "PayPal";
+      if (activeTab === "gpay") payInfo = "Google Pay";
+      if (activeTab === "upi") payInfo = `UPI (${document.getElementById("upiId").value || 'N/A'})`;
+
+      reviewPayment.innerHTML = `
+        <h4>Payment details</h4>
+        <div class="review-row"><span>Method:</span> <span>${activeTab.toUpperCase()}</span></div>
+        <div class="review-row"><span>Account:</span> <span>${payInfo}</span></div>
+      `;
+
+      // 3. Items review
+      reviewItems.innerHTML = `
+        <h4>Items</h4>
+        ${cart.map(item => `
+          <div class="review-cart-item">
+            <img src="${item.image}" class="review-item-img" alt="${item.title}">
+            <div class="review-item-info">
+              <div class="review-item-title">${item.title.length > 30 ? item.title.substring(0, 30) + '...' : item.title}</div>
+              <div class="review-item-qty">Qty: ${item.quantity} · $${item.price.toFixed(2)} ea</div>
+            </div>
+            <div class="review-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+          </div>
+        `).join('')}
+      `;
+    }
+
   }
 
 });
