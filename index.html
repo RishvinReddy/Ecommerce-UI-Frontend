@@ -59,32 +59,19 @@
         <!-- Cart -->
         <div class="cart" id="cartToggle">
           <i class="fas fa-shopping-cart"></i>
-          <span class="cart-count">3</span>
+          <span class="cart-count">0</span>
 
           <!-- Cart Preview Popup -->
           <div class="cart-popup" id="cartPopup">
             <div class="cart-popup-header">
               <h4>Your Cart</h4>
+              <button class="clear-cart-btn" id="clearCartBtn" title="Clear all"><i class="fas fa-trash-alt"></i></button>
             </div>
-            <div class="cart-items">
-              <!-- Mock Cart Item -->
-              <div class="cart-item">
-                <div class="item-img"><i class="fas fa-laptop"></i></div>
-                <div class="item-details">
-                  <p class="item-name">MacBook Pro 16"</p>
-                  <p class="item-price">$2,499</p>
-                </div>
-              </div>
-              <div class="cart-item">
-                <div class="item-img"><i class="fas fa-headphones"></i></div>
-                <div class="item-details">
-                  <p class="item-name">Sony WH-1000XM5</p>
-                  <p class="item-price">$399</p>
-                </div>
-              </div>
+            <div class="cart-items" id="cartItemsContainer">
+              <!-- Dynamically populated via JS -->
             </div>
             <div class="cart-popup-footer">
-              <div class="total">Total: <span>$2,898</span></div>
+              <div class="total">Total: <span id="cartTotalDisplay">$0.00</span></div>
               <button class="checkout-btn">Checkout</button>
             </div>
           </div>

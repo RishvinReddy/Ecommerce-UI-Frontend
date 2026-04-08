@@ -82,52 +82,155 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================
-  // SHARED CART LOGIC
+  // SHARED CART LOGIC — FULL SYSTEM
   // ==========================================
-  window.updateCartCount = function() {
-    const count = document.querySelector(".cart-count");
-    if (!count) return;
 
-    let cart = JSON.parse(localStorage.getItem("premium_cart")) || [];
-    let totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-    count.textContent = totalItems;
-  };
-  
-  window.addToCart = function(e, productString, qty = 1) {
-    if(e) e.preventDefault();
-    if(e && e.stopPropagation) e.stopPropagation();
-    
-    let product = typeof productString === 'string' ? JSON.parse(productString) : productString;
-    let cart = JSON.parse(localStorage.getItem("premium_cart")) || [];
-    
-    // Check if product exists in cart
-    const existingIndex = cart.findIndex(item => item.id === product.id);
-    if(existingIndex >= 0) {
-      cart[existingIndex].quantity += parseInt(qty);
-    } else {
-      cart.push({...product, quantity: parseInt(qty)});
-    }
-    
+  // --- Utility Functions ---
+  function getCart() {
+    return JSON.parse(localStorage.getItem("premium_cart")) || [];
+  }
+
+  function saveCart(cart) {
     localStorage.setItem("premium_cart", JSON.stringify(cart));
+  }
+
+  // --- Update cart badge count ---
+  window.updateCartCount = function() {
+    const countEl = document.querySelector(".cart-count");
+    if (!countEl) return;
+    const total = getCart().reduce((sum, item) => sum + item.quantity, 0);
+    countEl.textContent = total;
+
+    // Bounce animation on badge
+    countEl.classList.remove("bounce");
+    void countEl.offsetWidth; // reflow trick to restart animation
+    countEl.classList.add("bounce");
+  };
+
+  // --- Render cart popup contents ---
+  window.renderCartPopup = function() {
+    const container  = document.getElementById("cartItemsContainer");
+    const totalEl    = document.getElementById("cartTotalDisplay");
+    if (!container) return;
+
+    const cart = getCart();
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="cart-empty">
+          <i class="fas fa-shopping-bag"></i>
+          <p>Your cart is empty</p>
+          <a href="index.html#products" class="browse-link">Browse Products</a>
+        </div>
+      `;
+      if (totalEl) totalEl.textContent = "$0.00";
+      return;
+    }
+
+    let grandTotal = 0;
+
+    container.innerHTML = cart.map((item, idx) => {
+      const lineTotal = item.price * item.quantity;
+      grandTotal += lineTotal;
+      const shortTitle = item.title.length > 22 ? item.title.substring(0, 22) + "…" : item.title;
+      return `
+        <div class="cart-item" id="cart-item-${idx}">
+          <img src="${item.image}" class="cart-item-img" alt="${item.title}" loading="lazy">
+          <div class="item-details">
+            <p class="item-name" title="${item.title}">${shortTitle}</p>
+            <p class="item-meta">${item.size ? item.size + ' · ' : ''}${item.color ? item.color : ''}</p>
+            <p class="item-price">$${item.price.toFixed(2)} × ${item.quantity} = <strong>$${lineTotal.toFixed(2)}</strong></p>
+          </div>
+          <button class="remove-item-btn" onclick="removeFromCart(${idx})" title="Remove"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+    }).join('');
+
+    if (totalEl) totalEl.textContent = "$" + grandTotal.toFixed(2);
+  };
+
+  // --- Remove single item by index ---
+  window.removeFromCart = function(idx) {
+    let cart = getCart();
+    cart.splice(idx, 1);
+    saveCart(cart);
     updateCartCount();
-    
-    // Basic toast animation
+    renderCartPopup();
+  };
+
+  // --- Add to cart (merge duplicates by id+size+color) ---
+  window.addToCart = function(e, productString, qty = 1) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+
+    const product = typeof productString === 'string'
+      ? JSON.parse(productString)
+      : productString;
+
+    let cart = getCart();
+    const existingIdx = cart.findIndex(item =>
+      item.id    === product.id &&
+      item.size  === (product.size  || null) &&
+      item.color === (product.color || null)
+    );
+
+    if (existingIdx >= 0) {
+      cart[existingIdx].quantity += parseInt(qty);
+    } else {
+      cart.push({ ...product, quantity: parseInt(qty) });
+    }
+
+    saveCart(cart);
+    updateCartCount();
+    renderCartPopup();
+
+    // Green button feedback
     const btn = e ? e.currentTarget : null;
-    if(btn) {
-      const originalHTML = btn.innerHTML;
+    if (btn) {
+      const orig = btn.innerHTML;
       btn.innerHTML = 'Added <i class="fas fa-check" style="margin-left:5px;"></i>';
       btn.style.background = '#32d74b';
-      btn.style.color = 'white';
+      btn.style.color      = '#fff';
       setTimeout(() => {
-        btn.innerHTML = originalHTML;
+        btn.innerHTML        = orig;
         btn.style.background = '';
-        btn.style.color = '';
+        btn.style.color      = '';
       }, 1500);
     }
   };
 
-  // Initialize cart visually
+  // --- Cart popup toggle (click on cart icon) ---
+  const cartToggle = document.getElementById("cartToggle");
+  const cartPopup  = document.getElementById("cartPopup");
+
+  if (cartToggle && cartPopup) {
+    cartToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      renderCartPopup(); // refresh contents on open
+      cartPopup.classList.toggle("open");
+    });
+
+    // Close when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!cartToggle.contains(e.target)) {
+        cartPopup.classList.remove("open");
+      }
+    });
+  }
+
+  // --- Clear entire cart ---
+  const clearCartBtn = document.getElementById("clearCartBtn");
+  if (clearCartBtn) {
+    clearCartBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      saveCart([]);
+      updateCartCount();
+      renderCartPopup();
+    });
+  }
+
+  // Initialize cart on every page load
   updateCartCount();
+  renderCartPopup();
 
   // ==========================================
   // DYNAMIC PRODUCT GRID (FakeStore API)
