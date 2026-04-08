@@ -1197,3 +1197,213 @@ body {
     justify-content: center;
   }
 }
+
+/* =========================================
+   INTERACTIVE FEATURES — PRODUCT DETAIL
+   ========================================= */
+
+/* --- Image Zoom Lens --- */
+.detail-img-container {
+  position: relative;
+  cursor: crosshair;
+}
+
+.zoom-lens {
+  display: none;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 2px solid rgba(0, 122, 255, 0.6);
+  border-radius: 8px;
+  background: rgba(0, 122, 255, 0.08);
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.zoom-preview {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: calc(100% + 16px);
+  width: 320px;
+  height: 320px;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.12);
+  background-repeat: no-repeat;
+  background-color: #fdfdfd;
+  z-index: 20;
+  pointer-events: none;
+}
+
+/* Hide zoom preview on mobile — use CSS scale instead */
+@media (max-width: 900px) {
+  .zoom-lens    { display: none !important; }
+  .zoom-preview { display: none !important; }
+
+  .detail-img-container:hover .detail-img {
+    transform: scale(1.4);
+  }
+}
+
+/* --- Price Block --- */
+.price-block {
+  margin-bottom: 24px;
+}
+
+.price-block .detail-price {
+  margin-bottom: 4px;
+}
+
+.price-total-label {
+  font-size: 15px;
+  color: #555;
+  margin: 0;
+}
+
+.price-total-label strong {
+  color: #111;
+  font-size: 17px;
+}
+
+/* --- Product Variations --- */
+.variation-group {
+  margin-bottom: 22px;
+}
+
+.variation-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+
+.selected-label {
+  color: #007aff;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.variation-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 100px;
+  border: 1.5px solid #e1e1e1;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.variation-btn:hover {
+  border-color: #007aff;
+  color: #007aff;
+}
+
+.variation-btn.active {
+  border-color: #007aff;
+  background: #007aff;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Color swatch dot inside button */
+.color-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+/* Override: map common CSS color names */
+.color-swatch[style*="spacegray"]    { background: #6e6e73 !important; }
+.color-swatch[style*="midnightblack"]{ background: #1c1c1e !important; }
+.color-swatch[style*="rosegold"]     { background: #b76e79 !important; }
+.color-swatch[style*="default"]      { background: linear-gradient(135deg, #f5f5f5, #ccc) !important; }
+
+/* --- Stock Indicator --- */
+.stock-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #32d74b;
+  font-weight: 500;
+  margin-top: 16px;
+  margin-bottom: 0;
+}
+
+.stock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #32d74b;
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(50, 215, 75, 0.2);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%   { box-shadow: 0 0 0 0px rgba(50, 215, 75, 0.4); }
+  70%  { box-shadow: 0 0 0 6px rgba(50, 215, 75, 0);   }
+  100% { box-shadow: 0 0 0 0px rgba(50, 215, 75, 0);   }
+}
+
+/* --- Toast Notification --- */
+.detail-toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #111;
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.detail-toast i {
+  color: #32d74b;
+  font-size: 18px;
+}
+
+.detail-toast.show {
+  transform: translateX(-50%) translateY(0px);
+  opacity: 1;
+}
+
+/* --- Star display in detail --- */
+.star-display {
+  color: #ffc107;
+  font-size: 18px;
+  letter-spacing: 2px;
+}

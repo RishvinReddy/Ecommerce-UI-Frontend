@@ -294,45 +294,241 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     
+    // Determine smart variations based on product category
+    function getVariationsForCategory(category) {
+      const cat = category.toLowerCase();
+      if (cat.includes("clothing") || cat.includes("fashion") || cat.includes("men") || cat.includes("women")) {
+        return {
+          sizes:  ["XS", "S", "M", "L", "XL", "XXL"],
+          colors: ["Black", "White", "Navy", "Grey", "Red"]
+        };
+      } else if (cat.includes("electronic") || cat.includes("tech")) {
+        return {
+          sizes:  ["Standard", "Pro", "Max"],
+          colors: ["Space Gray", "Silver", "Midnight Black"]
+        };
+      } else if (cat.includes("jewelry") || cat.includes("accessories")) {
+        return {
+          sizes:  ["One Size"],
+          colors: ["Gold", "Silver", "Rose Gold"]
+        };
+      }
+      return {
+        sizes:  ["Small", "Medium", "Large"],
+        colors: ["Default", "Black", "White"]
+      };
+    }
+
     function displayProductDetail(product) {
       const container = document.getElementById("productDetail");
-      const productJSON = JSON.stringify(product).replace(/'/g, "&#39;"); // Make safe for HTML
       
       const fullStars = Math.floor(product.rating.rate);
-      const starHTML = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
-    
+      const halfStar  = product.rating.rate % 1 >= 0.5;
+      const starHTML  = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(5 - fullStars - (halfStar ? 1 : 0));
+      
+      const variations = getVariationsForCategory(product.category);
+
+      // Build variation buttons HTML
+      const sizeButtons  = variations.sizes.map((s, i) =>
+        `<button class="variation-btn ${i === 0 ? 'active' : ''}" data-type="size" data-value="${s}">${s}</button>`
+      ).join('');
+      
+      const colorButtons = variations.colors.map((c, i) =>
+        `<button class="variation-btn color-btn ${i === 0 ? 'active' : ''}" data-type="color" data-value="${c}">
+          <span class="color-swatch" style="background:${c.toLowerCase().replace(/ /g, '')}"></span>${c}
+        </button>`
+      ).join('');
+
       container.innerHTML = `
         <div class="detail-container">
-          <div class="detail-img-container">
-            <img src="${product.image}" class="detail-img" alt="${product.title}">
+
+          <!-- Left: Image with Zoom -->
+          <div class="detail-img-container" id="zoomContainer">
+            <div class="zoom-lens" id="zoomLens"></div>
+            <img src="${product.image}" class="detail-img" id="detailImg" alt="${product.title}">
+            <div class="zoom-preview" id="zoomPreview" style="background-image: url('${product.image}');"></div>
           </div>
-          
+
+          <!-- Right: Info -->
           <div class="detail-info">
             <span class="detail-category">${product.category}</span>
             <h2 class="detail-title">${product.title}</h2>
-            
+
             <div class="detail-rating">
-              <i>${starHTML}</i>
-              <span>${product.rating.rate} Score - (${product.rating.count} Customer Reviews)</span>
+              <span class="star-display">${starHTML}</span>
+              <span>${product.rating.rate} / 5 &nbsp;·&nbsp; ${product.rating.count} Reviews</span>
             </div>
-            
-            <p class="detail-price">$${product.price.toFixed(2)}</p>
-            
+
+            <!-- Live Price Display -->
+            <div class="price-block">
+              <p class="detail-price" id="currentPrice">$${product.price.toFixed(2)}</p>
+              <p class="price-total-label">Total: <strong id="totalPrice">$${product.price.toFixed(2)}</strong></p>
+            </div>
+
             <p class="detail-description">${product.description}</p>
-            
+
+            <!-- Size Variations -->
+            <div class="variation-group">
+              <label class="variation-label">Size: <span class="selected-label" id="selectedSize">${variations.sizes[0]}</span></label>
+              <div class="variation-options" id="sizeOptions">${sizeButtons}</div>
+            </div>
+
+            <!-- Color Variations -->
+            <div class="variation-group">
+              <label class="variation-label">Color: <span class="selected-label" id="selectedColor">${variations.colors[0]}</span></label>
+              <div class="variation-options" id="colorOptions">${colorButtons}</div>
+            </div>
+
+            <!-- Quantity + Add to Cart -->
             <div class="detail-actions">
               <div class="quantity-selector">
-                <button class="qty-btn minus" onclick="document.getElementById('qty').stepDown()">-</button>
-                <input type="number" id="qty" class="qty-input" value="1" min="1" max="10">
-                <button class="qty-btn plus" onclick="document.getElementById('qty').stepUp()">+</button>
+                <button class="qty-btn" id="qtyMinus">−</button>
+                <input type="number" id="qty" class="qty-input" value="1" min="1" max="10" readonly>
+                <button class="qty-btn" id="qtyPlus">+</button>
               </div>
-              <button class="cta-btn primary-btn detail-add-btn" onclick='addToCart(event, ${productJSON}, document.getElementById("qty").value)'>
-                Add to Cart
+              <button class="cta-btn primary-btn detail-add-btn" id="detailAddBtn">
+                <i class="fas fa-shopping-cart"></i>&nbsp; Add to Cart
               </button>
             </div>
+
+            <!-- Stock indicator -->
+            <p class="stock-indicator"><span class="stock-dot"></span> In Stock — Ships within 2-3 business days</p>
           </div>
         </div>
+
+        <!-- Toast Notification -->
+        <div class="detail-toast" id="detailToast">
+          <i class="fas fa-check-circle"></i>
+          <span id="toastMsg">Added to cart!</span>
+        </div>
       `;
+
+      // ---- Wire up Interactivity ----
+      let basePrice  = product.price;
+      let quantity   = 1;
+      let selectedSize  = variations.sizes[0];
+      let selectedColor = variations.colors[0];
+
+      // 1. Quantity Selector
+      document.getElementById("qtyMinus").addEventListener("click", () => {
+        if (quantity > 1) {
+          quantity--;
+          document.getElementById("qty").value = quantity;
+          updateLivePrice(basePrice, quantity);
+        }
+      });
+
+      document.getElementById("qtyPlus").addEventListener("click", () => {
+        if (quantity < 10) {
+          quantity++;
+          document.getElementById("qty").value = quantity;
+          updateLivePrice(basePrice, quantity);
+        }
+      });
+
+      // 2. Live Price Update
+      function updateLivePrice(price, qty) {
+        const total = (price * qty).toFixed(2);
+        document.getElementById("totalPrice").textContent = "$" + total;
+      }
+
+      // 3. Variation Selection
+      container.querySelectorAll(".variation-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const type  = btn.dataset.type;
+          const value = btn.dataset.value;
+
+          // Remove active from siblings
+          container.querySelectorAll(`.variation-btn[data-type="${type}"]`).forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          if (type === "size") {
+            selectedSize = value;
+            document.getElementById("selectedSize").textContent = value;
+          } else if (type === "color") {
+            selectedColor = value;
+            document.getElementById("selectedColor").textContent = value;
+          }
+        });
+      });
+
+      // 4. Add to Cart with full details
+      document.getElementById("detailAddBtn").addEventListener("click", (e) => {
+        const cartItem = {
+          id:       product.id,
+          title:    product.title,
+          image:    product.image,
+          price:    basePrice,
+          size:     selectedSize,
+          color:    selectedColor,
+          quantity: quantity
+        };
+
+        let cart = JSON.parse(localStorage.getItem("premium_cart")) || [];
+        const existingIndex = cart.findIndex(item => item.id === cartItem.id && item.size === cartItem.size && item.color === cartItem.color);
+        if (existingIndex >= 0) {
+          cart[existingIndex].quantity += quantity;
+        } else {
+          cart.push(cartItem);
+        }
+        localStorage.setItem("premium_cart", JSON.stringify(cart));
+        updateCartCount();
+
+        // Animated Toast Notification
+        const toast = document.getElementById("detailToast");
+        document.getElementById("toastMsg").textContent = `${product.title.substring(0, 30)}... added to cart!`;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+
+        // Button feedback
+        const btn = document.getElementById("detailAddBtn");
+        btn.innerHTML = '<i class="fas fa-check"></i>&nbsp; Added!';
+        btn.style.background = "#32d74b";
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-shopping-cart"></i>&nbsp; Add to Cart';
+          btn.style.background = "";
+        }, 1800);
+      });
+
+      // 5. Image Magnifier Lens Zoom (Desktop)
+      const imgEl    = document.getElementById("detailImg");
+      const lens     = document.getElementById("zoomLens");
+      const preview  = document.getElementById("zoomPreview");
+      const zoomContainer = document.getElementById("zoomContainer");
+      const ZOOM    = 2.5;
+
+      function moveLens(e) {
+        e.preventDefault();
+        const rect   = imgEl.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        let x = clientX - rect.left - lens.offsetWidth  / 2;
+        let y = clientY - rect.top  - lens.offsetHeight / 2;
+
+        // Clamp lens within image
+        x = Math.max(0, Math.min(x, imgEl.offsetWidth  - lens.offsetWidth));
+        y = Math.max(0, Math.min(y, imgEl.offsetHeight - lens.offsetHeight));
+
+        lens.style.left = x + "px";
+        lens.style.top  = y + "px";
+
+        // Move background in preview
+        preview.style.backgroundPosition = `-${x * ZOOM}px -${y * ZOOM}px`;
+        preview.style.backgroundSize     = `${imgEl.offsetWidth * ZOOM}px ${imgEl.offsetHeight * ZOOM}px`;
+      }
+
+      zoomContainer.addEventListener("mouseenter", () => {
+        lens.style.display    = "block";
+        preview.style.display = "block";
+      });
+
+      zoomContainer.addEventListener("mouseleave", () => {
+        lens.style.display    = "none";
+        preview.style.display = "none";
+      });
+
+      zoomContainer.addEventListener("mousemove", moveLens);
     }
     
     async function loadRelatedProducts(category, currentId) {
