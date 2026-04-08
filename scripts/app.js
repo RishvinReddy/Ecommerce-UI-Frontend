@@ -43,18 +43,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const searchSuggestions = document.getElementById("searchSuggestions");
   
-  // Real-world scenario would fetch data here
+  // Real-world scenario search filtering
   searchInput.addEventListener("input", (e) => {
-    const val = e.target.value;
+    const val = e.target.value.toLowerCase().trim();
+    
+    // UI interactions
     if(val.length > 0) {
       searchSuggestions.style.opacity = "1";
       searchSuggestions.style.visibility = "visible";
       searchSuggestions.style.transform = "translateY(0)";
     } else {
-      // Revert to CSS hover logic by removing inline styles
       searchSuggestions.style.opacity = "";
       searchSuggestions.style.visibility = "";
       searchSuggestions.style.transform = "";
+    }
+
+    // Dynamic filtering of grid
+    if (typeof allProducts !== 'undefined' && typeof renderProducts === 'function') {
+      if (val === '') {
+        // Reset to currently active category
+        const activeBtn = document.querySelector(".filter-btn.active");
+        const activeFilter = activeBtn ? activeBtn.getAttribute("data-filter") : "all";
+        
+        if (activeFilter === "all") {
+          renderProducts(allProducts);
+        } else {
+          renderProducts(allProducts.filter(p => p.category === activeFilter));
+        }
+      } else {
+        // Search across title and category
+        const searchResults = allProducts.filter(p => 
+          p.title.toLowerCase().includes(val) || 
+          p.category.toLowerCase().includes(val)
+        );
+        renderProducts(searchResults);
+      }
     }
   });
 
@@ -73,17 +96,46 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // 2. Fetch Data from API
-  fetch("https://fakestoreapi.com/products")
-    .then(response => response.json())
-    .then(data => {
+  // 2. Fetch Data from API (Robust Async/Await + Caching)
+  async function fetchProducts() {
+    try {
+      // CACHE CHECK: Instant load if available
+      const cachedData = localStorage.getItem("premium_products");
+      if (cachedData) {
+        allProducts = JSON.parse(cachedData);
+        renderProducts(allProducts);
+        return;
+      }
+
+      // NO CACHE: Fetch from API
+      const response = await fetch("https://fakestoreapi.com/products");
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch products from API. Status: " + response.status);
+      }
+
+      const data = await response.json();
       allProducts = data;
-      renderProducts(data);
-    })
-    .catch(error => {
+      
+      // Store in CACHE for future loads
+      localStorage.setItem("premium_products", JSON.stringify(data));
+      
+      renderProducts(allProducts);
+      
+    } catch (error) {
       console.error("Error fetching products:", error);
-      productGrid.innerHTML = `<div class="loading-state"><p style="color: #ff3b30;">Failed to load products. Please check your connection.</p></div>`;
-    });
+      productGrid.innerHTML = `
+        <div class="loading-state">
+          <p style="color: #ff3b30; font-weight: bold; font-size: 20px;">Failed to load products 🚨</p>
+          <p style="font-size: 14px; margin-bottom: 15px;">Please check your internet connection and try again.</p>
+          <button class="cta-btn primary-btn" onclick="location.reload()">Try Again</button>
+        </div>
+      `;
+    }
+  }
+
+  // Initialize
+  fetchProducts();
 
   // 3. Render Products Function
   function renderProducts(products) {
