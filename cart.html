@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart | ShopX</title>
+  <meta name="description" content="Review your selected products and proceed to checkout on ShopX.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ===== HEADER (consistent with index.html) ===== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">Shop<span class="highlight">X</span></a>
+
+      <nav class="nav" id="navMenu">
+        <ul>
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li class="dropdown">
+            <a href="#" class="nav-link">Products <i class="fas fa-chevron-down dropdown-icon"></i></a>
+            <ul class="dropdown-menu">
+              <li><a href="index.html#products">Electronics</a></li>
+              <li><a href="index.html#products">Fashion</a></li>
+              <li><a href="index.html#products">Home & Living</a></li>
+              <li><a href="index.html#products">Accessories</a></li>
+            </ul>
+          </li>
+          <li><a href="#" class="nav-link">About</a></li>
+          <li><a href="#" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-right">
+        <div class="search-container">
+          <input type="text" placeholder="Search products..." class="search" id="searchInput">
+          <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <div class="cart" id="cartToggle">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+          <div class="cart-popup" id="cartPopup">
+            <div class="cart-popup-header">
+              <h4>Your Cart</h4>
+              <button class="clear-cart-btn" id="clearCartBtn" title="Clear all"><i class="fas fa-trash-alt"></i></button>
+            </div>
+            <div class="cart-items" id="cartItemsContainer"></div>
+            <div class="cart-popup-footer">
+              <div class="total">Total: <span id="cartTotalDisplay">$0.00</span></div>
+              <button class="checkout-btn" onclick="window.location.href='cart.html'">View Full Cart</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="hamburger" id="hamburger">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== CART PAGE BODY ===== -->
+  <section class="cart-page-section">
+    <div class="cart-page-container">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-nav" style="margin-bottom: 32px;">
+        <a href="index.html">Home</a> / <span>Shopping Cart</span>
+      </div>
+
+      <h1 class="cart-page-title">Your Shopping Cart</h1>
+
+      <!-- Main Layout: Items + Summary -->
+      <div class="cart-layout" id="cartLayout">
+
+        <!-- LEFT: Cart Items -->
+        <div class="cart-items-panel" id="cartPageItems">
+          <!-- Dynamically rendered by JS -->
+        </div>
+
+        <!-- RIGHT: Order Summary -->
+        <aside class="order-summary" id="orderSummary">
+          <h3 class="summary-title">Order Summary</h3>
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="summarySubtotal">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span id="summaryShipping" class="shipping-free">FREE</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax (8%)</span>
+            <span id="summaryTax">$0.00</span>
+          </div>
+
+          <div class="promo-group">
+            <input type="text" id="promoInput" class="promo-input" placeholder="Promo code">
+            <button class="promo-btn" id="promoBtn">Apply</button>
+          </div>
+          <p class="promo-feedback" id="promoFeedback"></p>
+
+          <div class="summary-divider"></div>
+          <div class="summary-row summary-total-row">
+            <span>Total</span>
+            <span id="summaryTotal">$0.00</span>
+          </div>
+
+          <button class="cta-btn primary-btn checkout-big-btn" id="checkoutBtn" disabled>
+            <i class="fas fa-lock"></i>&nbsp; Proceed to Checkout
+          </button>
+          <a href="index.html#products" class="continue-shopping-link">
+            <i class="fas fa-arrow-left"></i> Continue Shopping
+          </a>
+
+          <div class="secure-badges">
+            <span><i class="fas fa-shield-alt"></i> Secure</span>
+            <span><i class="fas fa-truck"></i> Fast Delivery</span>
+            <span><i class="fas fa-undo"></i> Easy Returns</span>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <script src="scripts/app.js"></script>
+</body>
+
+</html>

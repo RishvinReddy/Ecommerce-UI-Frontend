@@ -696,4 +696,161 @@ document.addEventListener("DOMContentLoaded", () => {
     loadProductDetail();
   }
 
+  // ==========================================
+  // CART PAGE LOGIC (cart.html)
+  // ==========================================
+  const cartPageItems = document.getElementById("cartPageItems");
+
+  if (cartPageItems || window.location.pathname.includes("cart.html")) {
+
+    let cartDiscount = 0; // discount multiplier from promo code
+
+    const PROMO_CODES = {
+      "SAVE10":  0.10,
+      "SHOPX20": 0.20,
+      "WELCOME": 0.05
+    };
+
+    // --- Render full cart page ---
+    function loadCartPage() {
+      const container = document.getElementById("cartPageItems");
+      if (!container) return;
+
+      const cart = getCart();
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="cart-empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>Your cart is empty</h3>
+            <p>Looks like you haven't added anything yet.</p>
+            <a href="index.html#products" class="cta-btn primary-btn" style="text-decoration:none;">
+              Start Shopping
+            </a>
+          </div>
+        `;
+        updateSummary(cart);
+        const checkoutBtn = document.getElementById("checkoutBtn");
+        if (checkoutBtn) checkoutBtn.disabled = true;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="cart-items-panel-header">
+          <span>Product</span>
+          <span>Price</span>
+          <span>Quantity</span>
+          <span>Total</span>
+        </div>
+        ${cart.map((item, idx) => {
+          const lineTotal = (item.price * item.quantity).toFixed(2);
+          const shortTitle = item.title.length > 40 ? item.title.substring(0, 40) + "…" : item.title;
+          const metaParts = [item.size, item.color].filter(Boolean).join(" · ");
+          return `
+            <div class="cart-page-item" id="cart-row-${idx}">
+              <div class="cart-product-info">
+                <img src="${item.image}" class="cart-product-img" alt="${item.title}" loading="lazy">
+                <div class="cart-product-text">
+                  <h4>${shortTitle}</h4>
+                  ${metaParts ? `<p class="cart-meta">${metaParts}</p>` : ''}
+                  <button class="cart-page-remove-btn" onclick="removeCartItem(${idx})">
+                    <i class="fas fa-trash-alt"></i> Remove
+                  </button>
+                </div>
+              </div>
+              <div class="cart-unit-price">$${item.price.toFixed(2)}</div>
+              <div class="cart-qty-stepper">
+                <button class="cart-qty-btn" onclick="changeCartQty(${idx}, -1)">−</button>
+                <span class="cart-qty-display">${item.quantity}</span>
+                <button class="cart-qty-btn" onclick="changeCartQty(${idx}, 1)">+</button>
+              </div>
+              <div class="cart-line-total">$${lineTotal}</div>
+            </div>
+          `;
+        }).join('')}
+      `;
+
+      updateSummary(cart);
+
+      const checkoutBtn = document.getElementById("checkoutBtn");
+      if (checkoutBtn) checkoutBtn.disabled = false;
+    }
+
+    // --- Update order summary panel ---
+    function updateSummary(cart) {
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const discounted = subtotal * (1 - cartDiscount);
+      const tax       = discounted * 0.08;
+      const total     = discounted + tax;
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set("summarySubtotal", "$" + subtotal.toFixed(2));
+      set("summaryTax",      "$" + tax.toFixed(2));
+      set("summaryTotal",    "$" + total.toFixed(2));
+
+      const shippingEl = document.getElementById("summaryShipping");
+      if (shippingEl) {
+        shippingEl.textContent = subtotal >= 50 ? "FREE" : "$5.99";
+        shippingEl.className   = subtotal >= 50 ? "shipping-free" : "";
+      }
+    }
+
+    // --- Quantity change ---
+    window.changeCartQty = function(idx, delta) {
+      let cart = getCart();
+      if (!cart[idx]) return;
+      cart[idx].quantity = Math.max(1, Math.min(10, cart[idx].quantity + delta));
+      saveCart(cart);
+      loadCartPage();
+      updateCartCount();
+      renderCartPopup();
+    };
+
+    // --- Remove item ---
+    window.removeCartItem = function(idx) {
+      let cart = getCart();
+      cart.splice(idx, 1);
+      saveCart(cart);
+      loadCartPage();
+      updateCartCount();
+      renderCartPopup();
+    };
+
+    // --- Promo code ---
+    const promoBtn = document.getElementById("promoBtn");
+    if (promoBtn) {
+      promoBtn.addEventListener("click", () => {
+        const code     = (document.getElementById("promoInput").value || "").trim().toUpperCase();
+        const feedback = document.getElementById("promoFeedback");
+        const discount = PROMO_CODES[code];
+        if (discount) {
+          cartDiscount = discount;
+          feedback.textContent = `✓ "${code}" applied — ${discount * 100}% off!`;
+          feedback.className   = "promo-feedback success";
+        } else {
+          cartDiscount = 0;
+          feedback.textContent = "Invalid promo code. Try SAVE10 or SHOPX20.";
+          feedback.className   = "promo-feedback error";
+        }
+        updateSummary(getCart());
+      });
+    }
+
+    // --- Checkout ---
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener("click", () => {
+        if (getCart().length === 0) return;
+        alert("🎉 Thank you for shopping with ShopX!\nOrder placed successfully.");
+        saveCart([]);
+        updateCartCount();
+        renderCartPopup();
+        loadCartPage();
+      });
+    }
+
+    // Run on page load
+    loadCartPage();
+  }
+
 });

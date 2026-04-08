@@ -65,13 +65,14 @@
           <div class="cart-popup" id="cartPopup">
             <div class="cart-popup-header">
               <h4>Your Cart</h4>
+              <button class="clear-cart-btn" id="clearCartBtn" title="Clear all"><i class="fas fa-trash-alt"></i></button>
             </div>
             <div class="cart-items" id="cartItemsContainer">
               <!-- Dynamically populated via JS -->
             </div>
             <div class="cart-popup-footer">
               <div class="total">Total: <span id="cartTotalDisplay">$0.00</span></div>
-              <button class="checkout-btn">Checkout</button>
+              <button class="checkout-btn" onclick="window.location.href='cart.html'">View Full Cart</button>
             </div>
           </div>
         </div>
