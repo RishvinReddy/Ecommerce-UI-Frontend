@@ -1,6 +1,15 @@
 import { db, doc, getDoc, setDoc, collection, addDoc } from "./firebase-config.js";
 
 const initApp = () => {
+  // Register Service Worker for PWA Offline Caching
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('ServiceWorker registered successfully', reg))
+        .catch(err => console.log('ServiceWorker registration failed: ', err));
+    });
+  }
+
   // Image Optimization Helper
   const optimizeImg = (url, w) => `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=webp&w=${w}`;
 
