@@ -3,7 +3,8 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signOut 
+  signOut,
+  updateProfile
 } from "./firebase-config.js";
 
 // Global User State
@@ -41,6 +42,10 @@ const initAuth = () => {
           <!-- Register Form -->
           <form class="auth-form" id="registerForm">
             <div class="auth-error" id="registerError"></div>
+            <div class="auth-input-group">
+              <i class="fas fa-user"></i>
+              <input type="text" id="registerName" class="auth-input" placeholder="Full Name" required>
+            </div>
             <div class="auth-input-group">
               <i class="fas fa-envelope"></i>
               <input type="email" id="registerEmail" class="auth-input" placeholder="Email Address" required>
@@ -231,11 +236,20 @@ const initAuth = () => {
     btn.disabled = true;
 
     try {
-      await createUserWithEmailAndPassword(
+      const userCredential = await createUserWithEmailAndPassword(
         auth, 
         document.getElementById("registerEmail").value, 
         document.getElementById("registerPassword").value
       );
+      
+      // Save Full Name to the user's profile
+      await updateProfile(userCredential.user, {
+        displayName: document.getElementById("registerName").value
+      });
+      
+      // Update UI with the new name's initial
+      document.getElementById("profileAvatar").textContent = document.getElementById("registerName").value.charAt(0).toUpperCase();
+
     } catch (error) {
       console.error(error);
       registerError.textContent = error.message.replace("Firebase: ", "");
