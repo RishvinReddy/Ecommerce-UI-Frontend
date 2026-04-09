@@ -9,7 +9,7 @@ import {
 // Global User State
 window.currentUser = null;
 
-document.addEventListener("DOMContentLoaded", () => {
+const initAuth = () => {
   // 1. Inject Auth Modal into body if not exists
   if (!document.getElementById("authModalOverlay")) {
     const modalHTML = `
@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
               <input type="password" id="loginPassword" class="auth-input" placeholder="Password" required>
             </div>
             <button type="submit" class="auth-btn" id="loginBtn">Log In</button>
+            <div class="auth-divider"><span>or automatically sign in</span></div>
+            <button type="button" class="auth-btn demo-btn" id="demoLoginBtn">Demo Sign In</button>
           </form>
 
           <!-- Register Form -->
@@ -56,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Inject Profile Dropdown into header (replacing generic user icon)
-  const navIcons = document.querySelector(".nav-icons");
+  const navIcons = document.querySelector(".header-right") || document.querySelector(".nav-icons");
   if (navIcons) {
     // 1. Remove existing user icon anchor
     const oldIcon = navIcons.querySelector("a[href='#'] i.fa-user")?.parentElement;
@@ -77,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
     // Insert before cart button
-    const cartBtn = navIcons.querySelector(".cart-btn-wrapper") || navIcons.lastElementChild;
+    const cartBtn = navIcons.querySelector(".cart") || navIcons.querySelector(".cart-btn-wrapper") || navIcons.lastElementChild;
     if(cartBtn) {
         cartBtn.insertAdjacentHTML('beforebegin', authNavHTML);
     } else {
@@ -194,6 +196,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // --- Demo Login Logic ---
+  const demoLoginBtn = document.getElementById("demoLoginBtn");
+  if (demoLoginBtn) {
+    demoLoginBtn.addEventListener("click", async () => {
+      const btn = demoLoginBtn;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      btn.disabled = true;
+      const demoEmail = "demo@shopx.com";
+      const demoPass = "password123";
+      
+      try {
+        await signInWithEmailAndPassword(auth, demoEmail, demoPass);
+      } catch (err) {
+        // If it fails, create it first
+        try {
+          await createUserWithEmailAndPassword(auth, demoEmail, demoPass);
+        } catch(e) {
+          loginError.textContent = "Demo login failed: " + e.message.replace("Firebase: ", "");
+          loginError.style.display = "block";
+        }
+      } finally {
+        btn.innerHTML = 'Demo Sign In';
+        btn.disabled = false;
+      }
+    });
+  }
+
   // --- Firebase Registration Logic ---
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -224,4 +253,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-});
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initAuth);
+} else {
+  initAuth();
+}

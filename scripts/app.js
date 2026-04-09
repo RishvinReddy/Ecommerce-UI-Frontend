@@ -1,6 +1,6 @@
 import { db, doc, getDoc, setDoc, collection, addDoc } from "./firebase-config.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+const initApp = () => {
   // Mobile Nav Toggle
   const hamburger = document.getElementById("hamburger");
   const navMenu = document.getElementById("navMenu");
@@ -1266,4 +1266,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-});
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp);
+} else {
+  initApp();
+}

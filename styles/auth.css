@@ -296,3 +296,30 @@
   background: rgba(255, 59, 48, 0.1);
   color: #ff3b30;
 }
+
+/* Demo Button Styles */
+.auth-divider {
+  text-align: center;
+  margin: 15px 0 5px;
+  color: #888;
+  font-size: 13px;
+  position: relative;
+}
+.auth-divider::before, 
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: rgba(0,0,0,0.1);
+}
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
+.auth-btn.demo-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+.auth-btn.demo-btn:hover {
+  background: #e0e0e0;
+}
