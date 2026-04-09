@@ -1,3 +1,33 @@
+<div align="center">
+
+<!-- HERO BANNER -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,50:764ba2,100:f093fb&height=200&section=header&text=ShopX&fontSize=80&fontColor=ffffff&fontAlignY=38&desc=Premium%20Full-Stack%20E-Commerce%20Experience&descAlignY=58&descSize=20&animation=fadeIn" width="100%"/>
+
+<br/>
+
+<!-- SHIELDS -->
+[![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-ShopX-667eea?style=for-the-badge&logoColor=white)](https://rishvinreddy.github.io/Ecommerce-UI-Frontend/)
+[![GitHub Stars](https://img.shields.io/github/stars/RishvinReddy/Ecommerce-UI-Frontend?style=for-the-badge&color=f093fb&logo=github)](https://github.com/RishvinReddy/Ecommerce-UI-Frontend/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/RishvinReddy/Ecommerce-UI-Frontend?style=for-the-badge&color=764ba2&logo=github)](https://github.com/RishvinReddy/Ecommerce-UI-Frontend/network)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://rishvinreddy.github.io/Ecommerce-UI-Frontend/)
+[![Firebase](https://img.shields.io/badge/Firebase-v11-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
+
+<br/>
+
+> **A production-grade, full-stack e-commerce experience** built with vanilla HTML/CSS/JS and Firebase.  
+> Glassmorphic UI · Real-time cart sync · Offline PWA · Multi-step checkout · Zero framework dependencies.
+
+<br/>
+
+
+
+
+
+
+
+
+
 # 🛒 ShopX — Premium Full-Stack E-Commerce App
 
 A production-ready, full-stack e-commerce experience built with vanilla HTML/CSS/JS and Firebase, featuring glassmorphic UI, real-time cart syncing, and offline PWA support.
