@@ -52,7 +52,7 @@ const initAuth = () => {
             </div>
             <div class="auth-input-group">
               <i class="fas fa-lock"></i>
-              <input type="password" id="registerPassword" class="auth-input" placeholder="Password (min 6 chars)" required>
+              <input type="password" id="registerPassword" class="auth-input" placeholder="Password (min 6 chars)" minlength="6" required>
             </div>
             <button type="submit" class="auth-btn" id="registerBtn">Create Account</button>
           </form>
