@@ -1,15 +1,16 @@
 const CACHE_NAME = 'shopx-cache-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/cart.html',
-  '/checkout.html',
-  '/product.html',
-  '/orders.html',
-  '/styles/main.css',
-  '/scripts/app.js',
-  '/scripts/auth.js',
-  '/scripts/firebase-config.js'
+  './',
+  './index.html',
+  './cart.html',
+  './checkout.html',
+  './product.html',
+  './orders.html',
+  './styles/main.css',
+  './styles/main.min.css',
+  './scripts/app.js',
+  './scripts/auth.js',
+  './scripts/firebase-config.js'
 ];
 
 // Install Event

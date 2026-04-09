@@ -4,7 +4,7 @@ const initApp = () => {
   // Register Service Worker for PWA Offline Caching
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('./sw.js')
         .then(reg => console.log('ServiceWorker registered successfully', reg))
         .catch(err => console.log('ServiceWorker registration failed: ', err));
     });
