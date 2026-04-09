@@ -2688,3 +2688,57 @@ body {
     letter-spacing: 2px;
   }
 }
+
+/* =========================================
+   PERFORMANCE & UI UPGRADES
+   ========================================= */
+
+/* Skeleton Loader Framework */
+.skeleton {
+  background: #eee;
+  background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+  border-radius: 5px;
+  background-size: 200% 100%;
+  animation: 1.5s shimmer linear infinite;
+  display: block;
+}
+
+@keyframes shimmer {
+  to {
+    background-position-x: -200%;
+  }
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+.skeleton-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+}
+.skeleton-title {
+  width: 40%;
+  height: 20px;
+  border-radius: 4px;
+}
+.skeleton-text {
+  width: 25%;
+  height: 16px;
+  border-radius: 4px;
+}
+.skeleton-flex {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}

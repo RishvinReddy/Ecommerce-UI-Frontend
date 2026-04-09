@@ -1,6 +1,9 @@
 import { db, doc, getDoc, setDoc, collection, addDoc } from "./firebase-config.js";
 
 const initApp = () => {
+  // Image Optimization Helper
+  const optimizeImg = (url, w) => `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=webp&w=${w}`;
+
   // Mobile Nav Toggle
   const hamburger = document.getElementById("hamburger");
   const navMenu = document.getElementById("navMenu");
@@ -187,7 +190,7 @@ const initApp = () => {
       const shortTitle = item.title.length > 22 ? item.title.substring(0, 22) + "…" : item.title;
       return `
         <div class="cart-item" id="cart-item-${idx}">
-          <img src="${item.image}" class="cart-item-img" alt="${item.title}" loading="lazy">
+          <img src="${optimizeImg(item.image, 100)}" class="cart-item-img" alt="${item.title}" loading="lazy">
           <div class="item-details">
             <p class="item-name" title="${item.title}">${shortTitle}</p>
             <p class="item-meta">${item.size ? item.size + ' · ' : ''}${item.color ? item.color : ''}</p>
@@ -363,7 +366,11 @@ const initApp = () => {
       card.innerHTML = `
         <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1;">
           <div class="product-img-wrapper">
-            <img loading="lazy" src="${product.image}" alt="${product.title}">
+            <img loading="lazy" 
+                 src="${optimizeImg(product.image, 400)}" 
+                 srcset="${optimizeImg(product.image, 300)} 300w, ${optimizeImg(product.image, 600)} 600w, ${optimizeImg(product.image, 900)} 900w"
+                 sizes="(max-width: 768px) 100vw, 30vw"
+                 alt="${product.title}">
           </div>
           <div class="product-card-body" style="padding-bottom: 0;">
             <span class="product-category">${product.category}</span>
@@ -500,8 +507,13 @@ const initApp = () => {
           <!-- Left: Image with Zoom -->
           <div class="detail-img-container" id="zoomContainer">
             <div class="zoom-lens" id="zoomLens"></div>
-            <img src="${product.image}" class="detail-img" id="detailImg" alt="${product.title}">
-            <div class="zoom-preview" id="zoomPreview" style="background-image: url('${product.image}');"></div>
+            <img src="${optimizeImg(product.image, 600)}" 
+                 srcset="${optimizeImg(product.image, 400)} 400w, ${optimizeImg(product.image, 800)} 800w, ${optimizeImg(product.image, 1200)} 1200w"
+                 sizes="(max-width: 768px) 100vw, 50vw"
+                 class="detail-img" id="detailImg" alt="${product.title}" loading="lazy">
+          </div>
+          <div class="product-gallery">
+            <div class="zoom-preview" id="zoomPreview" style="background-image: url('${optimizeImg(product.image, 1200)}');"></div>
           </div>
 
           <!-- Right: Info -->
@@ -721,7 +733,11 @@ const initApp = () => {
         card.innerHTML = `
           <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex-grow: 1;">
             <div class="product-img-wrapper">
-              <img loading="lazy" src="${product.image}" alt="${product.title}">
+              <img loading="lazy" 
+                   src="${optimizeImg(product.image, 200)}" 
+                   srcset="${optimizeImg(product.image, 200)} 200w, ${optimizeImg(product.image, 400)} 400w"
+                   sizes="200px"
+                   alt="${product.title}">
             </div>
             <div class="product-card-body" style="padding-bottom: 0;">
               <span class="product-category">${product.category}</span>
@@ -801,7 +817,7 @@ const initApp = () => {
           return `
             <div class="cart-page-item" id="cart-row-${idx}">
               <div class="cart-product-info">
-                <img src="${item.image}" class="cart-product-img" alt="${item.title}" loading="lazy">
+                <img src="${optimizeImg(item.image, 150)}" class="cart-product-img" alt="${item.title}" loading="lazy">
                 <div class="cart-product-text">
                   <h4>${shortTitle}</h4>
                   ${metaParts ? `<p class="cart-meta">${metaParts}</p>` : ''}
@@ -958,7 +974,7 @@ const initApp = () => {
         subtotal += item.price * item.quantity;
         return `
           <div class="checkout-summary-item">
-            <img src="${item.image}" alt="${item.title}" class="checkout-summary-img">
+            <img src="${optimizeImg(item.image, 150)}" alt="${item.title}" class="checkout-summary-img" loading="lazy">
             <div class="checkout-summary-name">${item.title}</div>
             <div style="font-size: 12px; color: #888;">Qty: ${item.quantity}</div>
             <div class="checkout-summary-price">$${(item.price * item.quantity).toFixed(2)}</div>
@@ -1253,7 +1269,7 @@ const initApp = () => {
         <h4>Items</h4>
         ${cart.map(item => `
           <div class="review-cart-item">
-            <img src="${item.image}" class="review-item-img" alt="${item.title}">
+            <img src="${optimizeImg(item.image, 100)}" class="review-item-img" alt="${item.title}" loading="lazy">
             <div class="review-item-info">
               <div class="review-item-title">${item.title.length > 30 ? item.title.substring(0, 30) + '...' : item.title}</div>
               <div class="review-item-qty">Qty: ${item.quantity} · $${item.price.toFixed(2)} ea</div>

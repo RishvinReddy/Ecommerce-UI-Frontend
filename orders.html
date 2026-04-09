@@ -158,7 +158,14 @@
       </div>
       
       <div id="ordersContent">
-         <div id="ordersLoader"><i class="fas fa-spinner fa-spin"></i></div>
+         <!-- Skeleton Loader Initial State -->
+         <div class="skeleton-card skeleton">
+           <div class="skeleton-flex">
+              <div class="skeleton-title skeleton"></div>
+              <div class="skeleton-text skeleton" style="margin-left: auto;"></div>
+           </div>
+           <div class="skeleton-img skeleton" style="margin-top: 10px;"></div>
+         </div>
       </div>
 
     </div>
@@ -189,7 +196,22 @@
           
           // User is logged in, fetch orders
           try {
-             ordersContent.innerHTML = '<div id="ordersLoader"><i class="fas fa-spinner fa-spin"></i> Fetching your orders...</div>';
+             ordersContent.innerHTML = `
+               <div class="skeleton-card skeleton">
+                 <div class="skeleton-flex">
+                    <div class="skeleton-title skeleton"></div>
+                    <div class="skeleton-text skeleton" style="margin-left: auto;"></div>
+                 </div>
+                 <div class="skeleton-img skeleton" style="margin-top: 10px;"></div>
+               </div>
+               <div class="skeleton-card skeleton">
+                 <div class="skeleton-flex">
+                    <div class="skeleton-title skeleton"></div>
+                    <div class="skeleton-text skeleton" style="margin-left: auto;"></div>
+                 </div>
+                 <div class="skeleton-img skeleton" style="margin-top: 10px;"></div>
+               </div>
+             `;
              
              const q = query(
                  collection(db, "orders"), 
@@ -217,7 +239,7 @@
                
                let itemsHtml = order.items.map(item => `
                  <div class="o-item">
-                   <img src="${item.image}" class="o-img">
+                   <img loading="lazy" src="${item.image}" class="o-img">
                    <div>
                      <div class="o-title">${item.title}</div>
                      <div class="o-meta">Qty: ${item.quantity} · $${item.price.toFixed(2)}</div>
